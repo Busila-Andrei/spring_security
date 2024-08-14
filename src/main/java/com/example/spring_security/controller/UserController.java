@@ -1,20 +1,24 @@
 package com.example.spring_security.controller;
 
 import com.example.spring_security.dto.UserDTO;
+import com.example.spring_security.exception.UnauthorizedException;
 import com.example.spring_security.exception.UserAlreadyExistsException;
+import com.example.spring_security.exception.UserNotFoundException;
 import com.example.spring_security.model.User;
+import com.example.spring_security.request.LoginRequest;
 import com.example.spring_security.request.RegisterRequest;
 import com.example.spring_security.response.ApiResponse;
 import com.example.spring_security.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("${api.prefix}/auth/")
+@RequestMapping("${api.prefix}/")
 public class UserController {
 
     private final UserService userService;
@@ -22,8 +26,8 @@ public class UserController {
     //@GetMapping("/{userID}/user")
 
 
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse> createUser(@RequestBody RegisterRequest registerRequest) {
+    @PostMapping("/auth/register")
+    public ResponseEntity<ApiResponse> createUser(@RequestBody @Valid RegisterRequest registerRequest) {
         try {
             User user = userService.createUser(registerRequest);
             UserDTO userDTO = userService.convertUserToUserDTO(user);
@@ -34,12 +38,26 @@ public class UserController {
     }
 
     //@GetMapping("/auth/confirm?token={confirmationToken}")
-    //@PostMapping("/auth/login")
+    @PostMapping("/auth/login")
+    public ResponseEntity<ApiResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
+        return null;
+    }
     //@PostMapping("/auth/refresh-token")
     //@PostMapping("/auth/forgot-password")
     //@PostMapping("/auth/reset-password")
     //@PostMapping("/auth/change-password")
-    //@GetMapping("/user/me")
+    @GetMapping("/auth/{userEmail}/me")
+    public ResponseEntity<ApiResponse> getUserByEmail(@PathVariable String userEmail) {
+        try {
+            User user = userService.getUserByEmail(userEmail);
+            UserDTO userDTO = userService.convertUserToUserDTO(user);
+            return ResponseEntity.ok(new ApiResponse("User details retrieved successfully.", userDTO));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(UNAUTHORIZED).body(new ApiResponse(e.getMessage(), null));
+        }
+    }
     //@PutMapping("/user/me")
     //@PostMapping("/auth/logout")
     //@GetMapping("/auth/validate-token")

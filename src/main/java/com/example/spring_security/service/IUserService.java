@@ -10,7 +10,10 @@ public interface IUserService {
     User createUser(RegisterRequest registerRequest);
 
     User getUserByEmail(String email);
-    User getUserById(int id);
+    User getUserById(long id);
+
+
+
     User deleteUserById(int id);
     User deleteUserByEmail(String email);
 
