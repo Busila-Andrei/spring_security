@@ -13,71 +13,49 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
-public class UserService implements IUserService {
+public class UserService {
 
 
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final EncryptionService encryptionService;
 
-
-
-    @Override
-    public User createUser(RegisterRequest registerRequest) {
-        return Optional.of(registerRequest)
-                .filter(user -> !userRepository.existsByEmail(registerRequest.getEmail()))
-                .map(req -> {
-                    User user = new User();
-                    user.setUsername(registerRequest.getFirstName() + " " + registerRequest.getLastName());
-                    user.setEmail(registerRequest.getEmail());
-                    user.setPassword(encryptionService.encryptPassword(registerRequest.getPassword()));
-                    return userRepository.save(user);
-                }) .orElseThrow(() -> new UserAlreadyExistsException("Oops! " + registerRequest.getEmail() +" already exists!"));
-    }
-
-    @Override
-    public User loginUser(LoginRequest loginRequest) {
-        Optional<User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            if (encryptionService.verifyPassword(loginRequest.getPassword(), user.getPassword())) {
-                return user;
-            }
+    public UserDTO createUser(RegisterRequest registerRequest) {
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new UserAlreadyExistsException("Oops! " + registerRequest.getEmail() +" already exists!");
         }
-        return null;
+
+        User user = new User();
+        user.setUsername(registerRequest.getFirstName() + " " + registerRequest.getLastName());
+        user.setEmail(registerRequest.getEmail());
+        user.setPassword(encryptionService.encryptPassword(registerRequest.getPassword()));
+        userRepository.save(user);
+        return convertUserToUserDTO(user);
     }
 
-    @Override
-    public User getUserByEmail(String email) {
-        if (email == null || email.isEmpty()) {
-            throw new UnauthorizedException("You need to be logged in to access this resource.");
+    public UserDTO loginUser(LoginRequest loginRequest) {
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + loginRequest.getEmail()));
+
+        if (!encryptionService.verifyPassword(loginRequest.getPassword(), user.getPassword())) {
+            throw new UnauthorizedException("Invalid credentials.");
         }
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
-
+        return convertUserToUserDTO(user);
     }
 
-    @Override
-    public User getUserById(long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
-    }
+//    @Override
+//    public User getUserByEmail(String email) {
+//        if (email == null || email.isEmpty()) {
+//            throw new UnauthorizedException("You need to be logged in to access this resource.");
+//        }
+//        return userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
+//
+//    }
 
-    @Override
-    public User deleteUserById(int id) {
-        return null;
-    }
 
-    @Override
-    public User deleteUserByEmail(String email) {
-        return null;
-    }
-
-    @Override
     public UserDTO convertUserToUserDTO(User user) {
         return modelMapper.map(user, UserDTO.class);
     }
