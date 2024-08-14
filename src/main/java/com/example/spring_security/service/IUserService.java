@@ -8,6 +8,7 @@ import com.example.spring_security.request.RegisterRequest;
 public interface IUserService {
 
     User createUser(RegisterRequest registerRequest);
+    User loginUser(LoginRequest loginRequest);
 
     User getUserByEmail(String email);
     User getUserById(long id);
@@ -18,4 +19,6 @@ public interface IUserService {
     User deleteUserByEmail(String email);
 
     UserDTO convertUserToUserDTO(User user);
+
+
 }

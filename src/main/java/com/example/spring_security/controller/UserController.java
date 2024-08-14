@@ -30,8 +30,7 @@ public class UserController {
     public ResponseEntity<ApiResponse> createUser(@RequestBody @Valid RegisterRequest registerRequest) {
         try {
             User user = userService.createUser(registerRequest);
-            UserDTO userDTO = userService.convertUserToUserDTO(user);
-            return ResponseEntity.ok(new ApiResponse("User registered successfully. Please check your email to confirm your account.", userDTO));
+            return ResponseEntity.ok(new ApiResponse("User registered successfully. Please check your email to confirm your account.", null));
         } catch (UserAlreadyExistsException e) {
             return ResponseEntity.status(CONFLICT).body(new ApiResponse(e.getMessage(), null));
         }
@@ -40,7 +39,12 @@ public class UserController {
     //@GetMapping("/auth/confirm?token={confirmationToken}")
     @PostMapping("/auth/login")
     public ResponseEntity<ApiResponse> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
-        return null;
+        try {
+            User user = userService.loginUser(loginRequest);
+            return ResponseEntity.ok(new ApiResponse("User details retrieved successfully.", userDTO));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), null));
+        }
     }
     //@PostMapping("/auth/refresh-token")
     //@PostMapping("/auth/forgot-password")

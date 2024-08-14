@@ -7,6 +7,7 @@ import com.example.spring_security.exception.UserAlreadyExistsException;
 import com.example.spring_security.exception.UserNotFoundException;
 import com.example.spring_security.model.User;
 import com.example.spring_security.repository.UserRepository;
+import com.example.spring_security.request.LoginRequest;
 import com.example.spring_security.request.RegisterRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -36,6 +37,15 @@ public class UserService implements IUserService {
                     user.setPassword(registerRequest.getPassword());
                     return userRepository.save(user);
                 }) .orElseThrow(() -> new UserAlreadyExistsException("Oops! " + registerRequest.getEmail() +" already exists!"));
+    }
+
+    @Override
+    public User loginUser(LoginRequest loginRequest) {
+        Optional<User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+        }
+        return null;
     }
 
     @Override
