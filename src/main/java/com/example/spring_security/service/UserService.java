@@ -22,7 +22,7 @@ public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-    private final JWTService jwtService;
+    private final EncryptionService encryptionService;
 
 
 
@@ -34,7 +34,7 @@ public class UserService implements IUserService {
                     User user = new User();
                     user.setUsername(registerRequest.getFirstName() + " " + registerRequest.getLastName());
                     user.setEmail(registerRequest.getEmail());
-                    user.setPassword(registerRequest.getPassword());
+                    user.setPassword(encryptionService.encryptPassword(registerRequest.getPassword()));
                     return userRepository.save(user);
                 }) .orElseThrow(() -> new UserAlreadyExistsException("Oops! " + registerRequest.getEmail() +" already exists!"));
     }
@@ -44,6 +44,9 @@ public class UserService implements IUserService {
         Optional<User> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
         if (optionalUser.isPresent()) {
             User user = optionalUser.get();
+            if (encryptionService.verifyPassword(loginRequest.getPassword(), user.getPassword())) {
+                return user;
+            }
         }
         return null;
     }
