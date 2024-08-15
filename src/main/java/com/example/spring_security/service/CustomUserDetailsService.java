@@ -23,10 +23,4 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
         return new CustomUserDetails(user);
     }
-
-    public UserDetails loadUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
-        return new CustomUserDetails(user);
-    }
 }

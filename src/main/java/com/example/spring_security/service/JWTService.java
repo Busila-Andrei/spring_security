@@ -41,6 +41,7 @@ public class JWTService {
         this.secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
+
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         return createToken(claims, userDetails.getUsername(), accessTokenExpirationTime);

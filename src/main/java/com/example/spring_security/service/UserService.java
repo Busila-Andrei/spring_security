@@ -46,7 +46,7 @@ public class UserService {
         user.setUsername(registerRequest.getFirstName() + " " + registerRequest.getLastName());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(encryptionService.encryptPassword(registerRequest.getPassword()));
-        user.setRole(Role.USER); // Setăm rolul implicit USER
+        user.setRole(Role.USER);
         userRepository.save(user);
         return userMapper.toDto(user);
     }
@@ -75,15 +75,5 @@ public class UserService {
     }
 
 
-
-//    @Override
-//    public User getUserByEmail(String email) {
-//        if (email == null || email.isEmpty()) {
-//            throw new UnauthorizedException("You need to be logged in to access this resource.");
-//        }
-//        return userRepository.findByEmail(email)
-//                .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
-//
-//    }
 
 }
