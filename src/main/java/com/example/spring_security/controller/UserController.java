@@ -1,7 +1,10 @@
 package com.example.spring_security.controller;
 
 import com.example.spring_security.dto.UserDTO;
+import com.example.spring_security.exception.UserNotFoundException;
+import com.example.spring_security.model.CustomUserDetails;
 import com.example.spring_security.model.User;
+import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.request.LoginRequest;
 import com.example.spring_security.request.RegisterRequest;
 import com.example.spring_security.response.ApiResponse;
@@ -9,9 +12,16 @@ import com.example.spring_security.service.JWTService;
 import com.example.spring_security.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -19,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final JWTService jwtService;
+
 
     //@GetMapping("/{userID}/user")
 
@@ -30,12 +40,11 @@ public class UserController {
         return ResponseEntity.ok(new ApiResponse<>("User registered successfully. Please check your email to confirm your account.", userDTO));
     }
 
-    //@GetMapping("/auth/confirm?token={confirmationToken}")
     @PostMapping("/auth/login")
-    public ResponseEntity<ApiResponse<String>> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
-            UserDTO userDTO = userService.loginUser(loginRequest);
-            String token = jwtService.generateJWT(userDTO);
-            return ResponseEntity.ok(new ApiResponse<>("User details retrieved successfully.", token));
+    public ResponseEntity<ApiResponse<Map<String, String>>> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
+        ApiResponse<Map<String, String>> apiResponse = userService.loginUser(loginRequest);
+        return ResponseEntity.ok(apiResponse);
+
     }
 
     @GetMapping("/me")
