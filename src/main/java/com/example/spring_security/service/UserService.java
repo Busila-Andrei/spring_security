@@ -34,12 +34,13 @@ public class UserService {
     private final EncryptionService encryptionService;
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
 
 
 
-    public UserDTO createUser(RegisterRequest registerRequest) {
+    public ApiResponse<String> createUser(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new UserAlreadyExistsException("Oops! " + registerRequest.getEmail() +" already exists!");
+            throw new UserAlreadyExistsException("User with email " + registerRequest.getEmail() +" already exists!");
         }
 
         User user = new User();
@@ -48,7 +49,9 @@ public class UserService {
         user.setPassword(encryptionService.encryptPassword(registerRequest.getPassword()));
         user.setRole(Role.USER);
         userRepository.save(user);
-        return userMapper.toDto(user);
+
+
+        return tokenService.generateAccessToken(user);
     }
 
     public ApiResponse<Map<String, String>> loginUser(LoginRequest loginRequest) {

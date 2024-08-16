@@ -25,16 +25,18 @@ public class SecurityConfiguration {
 
     private final JWTRequestFilter jwtRequestFilter;
 
-    private CustomUserDetailsService customUserDetailsService;
+
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable().cors().disable()
+        http.csrf().disable()
+                .cors().disable()
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic();
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

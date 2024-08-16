@@ -35,9 +35,9 @@ public class UserController {
 
 
     @PostMapping("/auth/register")
-    public ResponseEntity<ApiResponse<UserDTO>> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
-        UserDTO userDTO = userService.createUser(registerRequest);
-        return ResponseEntity.ok(new ApiResponse<>("User registered successfully. Please check your email to confirm your account.", userDTO));
+    public ResponseEntity<ApiResponse<String>> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
+        ApiResponse<String> apiResponse = userService.createUser(registerRequest);
+        return ResponseEntity.ok(apiResponse);
     }
 
     @PostMapping("/auth/login")

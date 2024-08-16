@@ -13,7 +13,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.xml.crypto.AlgorithmMethod;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +26,8 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-    @Value("${jwt.secret.key}")
-    private String SECRET_KEY;
+
+    private final SecretKey SECRET_KEY =  Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     @Value("${jwt.token.prefix}")
     private String TOKEN_PREFIX;
@@ -34,12 +38,6 @@ public class JWTService {
     @Value("${jwt.refresh-token-expiration}")
     private long refreshTokenExpirationTime;
 
-    private SecretKey secretKey;
-
-    @PostConstruct
-    public void init() {
-        this.secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
-    }
 
 
     public String generateAccessToken(UserDetails userDetails) {
@@ -53,14 +51,17 @@ public class JWTService {
     }
 
     private String createToken(Map<String, Object> claims, String subject, long expirationTime) {
+        System.out.println(SECRET_KEY);
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .signWith(SECRET_KEY)
                 .compact();
     }
+
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
@@ -74,6 +75,9 @@ public class JWTService {
     public Date getExpirationDateFromToken(String token) {
         return getClaimsFromToken(token, Claims::getExpiration);
     }
+    public Date getIssuedAtDateFromToken(String token) {
+        return getClaimsFromToken(token, Claims::getIssuedAt);
+    }
 
     public <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
@@ -81,7 +85,7 @@ public class JWTService {
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder().setSigningKey(SECRET_KEY).build().parseClaimsJws(token).getBody();
     }
 
     private Boolean isTokenExpired(String token) {
@@ -92,4 +96,7 @@ public class JWTService {
     public boolean isTokenValid(String token) {
         return !isTokenExpired(token) && getUsernameFromToken(token) != null;
     }
+
+
+
 }

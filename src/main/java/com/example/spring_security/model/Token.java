@@ -9,7 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -28,7 +28,7 @@ public class Token implements Serializable {
 
     @CreationTimestamp
     @Column(name = "created_timestamp", nullable = false)
-    private Timestamp createdTimestamp;
+    private Date createdTimestamp;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
