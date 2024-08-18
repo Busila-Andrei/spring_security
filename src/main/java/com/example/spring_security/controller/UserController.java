@@ -8,7 +8,9 @@ import com.example.spring_security.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -38,6 +40,10 @@ public class UserController {
 
     @GetMapping("/me")
     public User getLoggedInUserProfile(@AuthenticationPrincipal User user) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(authentication); //get all details(name,email,password,roles e.t.c) of the user
+        System.out.println(authentication.getDetails()); // get remote ip
+        System.out.println(authentication.getName());
         return user;
     }
 
