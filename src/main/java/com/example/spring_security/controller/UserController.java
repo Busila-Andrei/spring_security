@@ -1,26 +1,15 @@
 package com.example.spring_security.controller;
 
-import com.example.spring_security.dto.UserDTO;
-import com.example.spring_security.exception.UserNotFoundException;
-import com.example.spring_security.model.CustomUserDetails;
 import com.example.spring_security.model.User;
-import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.request.LoginRequest;
 import com.example.spring_security.request.RegisterRequest;
 import com.example.spring_security.response.ApiResponse;
-import com.example.spring_security.service.JWTService;
 import com.example.spring_security.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
 
 @RequiredArgsConstructor

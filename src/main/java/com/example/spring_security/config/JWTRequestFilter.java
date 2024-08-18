@@ -1,7 +1,6 @@
 package com.example.spring_security.config;
 
 import com.example.spring_security.model.CustomUserDetails;
-import com.example.spring_security.model.User;
 import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.service.JWTService;
 import jakarta.servlet.FilterChain;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 public class JWTRequestFilter extends OncePerRequestFilter {
@@ -29,18 +27,26 @@ public class JWTRequestFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {;
+
+        System.out.println("--------------------------------------------------------");
         final String tokenHeader = request.getHeader("Authorization");
+        System.out.println("tokenHeader: " + tokenHeader);
 
         if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
             String token = tokenHeader.substring(7);
+            System.out.println("Token: " + token);
             if (jwtService.isTokenValid(token)) {
                 String username = jwtService.getUsernameFromToken(token);
+                System.out.println(username);
                 userRepository.findByEmail(username).ifPresent(user -> {
                     CustomUserDetails customUserDetails = new CustomUserDetails(user);
+                    System.out.println(customUserDetails.getAuthorities());
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+                    System.out.println(authenticationToken);
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    System.out.println(authenticationToken.getAuthorities() + " " + authenticationToken.getPrincipal() + " " + authenticationToken.getCredentials());
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 });
             }
