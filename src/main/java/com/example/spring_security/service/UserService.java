@@ -50,8 +50,13 @@ public class UserService {
         user.setRole(Role.USER);
         userRepository.save(user);
 
+        //token to mail
+        String token = tokenService.generateAccessToken(user);
 
-        return tokenService.generateAccessToken(user);
+
+        return new ApiResponse<>("User registered successfully. Please check your email to confirm your account.");
+
+        //return tokenService.generateAccessToken(user);
     }
 
     public ApiResponse<Map<String, String>> loginUser(LoginRequest loginRequest) {

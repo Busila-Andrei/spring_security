@@ -18,7 +18,7 @@ public class TokenService {
     private final JWTService jwtService;
 
 
-    public ApiResponse<String> generateAccessToken(User user) {
+    public String generateAccessToken(User user) {
         String token = jwtService.generateAccessToken(new CustomUserDetails(user));
         if (tokenRepository.existsByToken(token)) {
             throw new UserAlreadyExistsException("Token " + token +" already exists!");
@@ -28,6 +28,7 @@ public class TokenService {
         tokenEntity.setCreatedTimestamp(jwtService.getIssuedAtDateFromToken(token));
         tokenEntity.setUser(user);
         tokenRepository.save(tokenEntity);
-        return new ApiResponse<>("User registered successfully. Please check your email to confirm your account.", token);
+        return token;
+
     }
 }
