@@ -40,24 +40,24 @@ public class UserService {
 
     public ApiResponse<String> createUser(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new UserAlreadyExistsException("User with email " + registerRequest.getEmail() +" already exists!");
+            throw new UserAlreadyExistsException("User with email " + registerRequest.getEmail() + " already exists!");
         }
 
+        // Create a new user and set its properties
         User user = new User();
         user.setUsername(registerRequest.getFirstName() + " " + registerRequest.getLastName());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(encryptionService.encryptPassword(registerRequest.getPassword()));
         user.setRole(Role.USER);
+        user.setIsEmailVerified(false);
+
+        Token token = tokenService.generateAccessToken(user);
+        user.getVerificationTokens().add(token);
         userRepository.save(user);
-
-        //token to mail
-        String token = tokenService.generateAccessToken(user);
-
-
+        System.out.println(token.getToken());
         return new ApiResponse<>("User registered successfully. Please check your email to confirm your account.");
-
-        //return tokenService.generateAccessToken(user);
     }
+
 
     public ApiResponse<Map<String, String>> loginUser(LoginRequest loginRequest) {
         authenticationManager.authenticate(
