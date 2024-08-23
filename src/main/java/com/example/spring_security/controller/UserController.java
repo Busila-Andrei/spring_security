@@ -38,12 +38,8 @@ public class UserController {
 
     @GetMapping("/auth/validate-token")
     public ResponseEntity<ApiResponse<String>> validateTokenAndEnableUser(@RequestParam("token") String token) {
-        ApiResponse<String> apiResponse = userService.validateTokenAndEnableUser(token;
+        ApiResponse<String> apiResponse = userService.validateTokenAndEnableUser(token);
         return ResponseEntity.ok(apiResponse);
-
-
-
-
     }
 
     @PostMapping("/auth/login")
@@ -51,15 +47,6 @@ public class UserController {
         ApiResponse<Map<String, String>> apiResponse = userService.loginUser(loginRequest);
         return ResponseEntity.ok(apiResponse);
 
-    }
-
-    @GetMapping("/me")
-    public User getLoggedInUserProfile(@AuthenticationPrincipal User user) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(authentication); //get all details(name,email,password,roles e.t.c) of the user
-        System.out.println(authentication.getDetails()); // get remote ip
-        System.out.println(authentication.getName());
-        return user;
     }
 
     //@PostMapping("/auth/refresh-token")

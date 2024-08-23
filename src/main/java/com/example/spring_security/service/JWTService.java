@@ -88,6 +88,12 @@ public class JWTService {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
+    public Boolean isTokenValidForUser(String token, UserDetails userDetails) {
+        final String username = getUsernameFromToken(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+
     public <T> T getHeaderFromToken(String token, Function<JwsHeader<?>, T> headerResolver) {
         final JwsHeader<?> header = getAllHeadersFromToken(token);
         return headerResolver.apply(header);

@@ -2,7 +2,6 @@ package com.example.spring_security.service;
 
 
 import com.example.spring_security.config.UserMapper;
-import com.example.spring_security.dto.UserDTO;
 import com.example.spring_security.exception.UnauthorizedException;
 import com.example.spring_security.exception.UserAlreadyExistsException;
 import com.example.spring_security.exception.UserNotFoundException;
@@ -15,15 +14,12 @@ import com.example.spring_security.request.LoginRequest;
 import com.example.spring_security.request.RegisterRequest;
 import com.example.spring_security.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -102,7 +98,7 @@ public class UserService {
             if (!user.getIsEmailVerified()) {
                 user.setIsEmailVerified(true);  // Setează utilizatorul ca fiind activat
                 userRepository.save(user);  // Salvează modificările în baza de date
-                return ResponseEntity.ok(new ApiResponse<>("User account has been successfully enabled."));
+                return new ApiResponse<>("User account has been successfully enabled.");
             } else {
                 return new ApiResponse<>("User account is already enabled.");
             }
