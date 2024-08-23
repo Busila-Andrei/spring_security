@@ -1,6 +1,7 @@
 package com.example.spring_security.service;
 
 import com.example.spring_security.config.UserMapper;
+import com.example.spring_security.exception.UnauthorizedException;
 import com.example.spring_security.exception.UserAlreadyExistsException;
 import com.example.spring_security.exception.UserNotFoundException;
 import com.example.spring_security.model.CustomUserDetails;
@@ -49,6 +50,7 @@ public class UserService {
         Token token = createVerificationToken(user);
         user.getVerificationTokens().add(token);
         userRepository.save(user);
+        System.out.println(token.getToken());
 
         logger.debug("Generated verification token: {}", token.getToken());
         return new ApiResponse<>("User registered successfully. Please check your email to confirm your account.");
@@ -71,6 +73,7 @@ public class UserService {
         );
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = userDetails.getUser();
 
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
@@ -78,14 +81,14 @@ public class UserService {
         Map<String, String> response = new HashMap<>();
         response.put("accessToken", accessToken);
         response.put("refreshToken", refreshToken);
+        System.out.println(accessToken);
         return new ApiResponse<>("Login successful.", response);
     }
 
     public ApiResponse<String> validateTokenAndEnableUser(String token) {
         if (jwtService.isTokenValid(token)) {
             String username = jwtService.getUsernameFromToken(token);
-            User user = userRepository.findByEmail(username)
-                    .orElseThrow(() -> new UserNotFoundException("User not found with email: " + username));
+            User user = findUserByEmail(username);
 
             if (!user.getIsEmailVerified()) {
                 user.setIsEmailVerified(true);
@@ -97,5 +100,10 @@ public class UserService {
         } else {
             return new ApiResponse<>("Invalid or expired token.");
         }
+    }
+
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
     }
 }

@@ -1,5 +1,6 @@
 package com.example.spring_security.service;
 
+import com.example.spring_security.model.CustomUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
@@ -38,7 +39,6 @@ public class JWTService {
     @PostConstruct
     public void init() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        //keyBytes = Base64.getDecoder().decode(keyBytes); // activează dacă secretul este în Base64
         this.key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
     }
 
@@ -51,17 +51,11 @@ public class JWTService {
     }
 
     private String createToken(Map<String, Object> claims, String subject, long expirationTime) {
-        String token = Jwts.builder()
+        return Jwts.builder()
                 .setHeader(createHeader())
                 .setClaims(createPayload(claims, subject, expirationTime))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
-
-        logger.debug("Generated Token Headers: {}", getAllHeadersFromToken(token));
-        logger.debug("Generated Token Claims: {}", getAllClaimsFromToken(token));
-        logger.debug("Is Token Valid: {}", isTokenValid(token));
-
-        return token;
     }
 
     private Map<String, Object> createHeader() {
@@ -78,26 +72,13 @@ public class JWTService {
         return claims;
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    public Boolean isTokenValid(String token) {
+        return !isTokenExpired(token) && getUsernameFromToken(token) != null;
+    }
+
+    public Boolean isTokenValidForUser(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
-
-    public <T> T getHeaderFromToken(String token, Function<JwsHeader<?>, T> headerResolver) {
-        final JwsHeader<?> header = getAllHeadersFromToken(token);
-        return headerResolver.apply(header);
-    }
-
-    private JwsHeader<?> getAllHeadersFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getHeader();
-    }
-
-    public String getAlgorithmFromToken(String token) {
-        return getHeaderFromToken(token, JwsHeader::getAlgorithm);
-    }
-
-    public String getTypeFromToken(String token) {
-        return getHeaderFromToken(token, header -> (String) header.get("typ"));
     }
 
     public String getUsernameFromToken(String token) {
@@ -112,6 +93,15 @@ public class JWTService {
         return getClaimsFromToken(token, Claims::getIssuedAt);
     }
 
+    public <T> T getHeaderFromToken(String token, Function<JwsHeader<?>, T> headerResolver) {
+        final JwsHeader<?> header = getAllHeadersFromToken(token);
+        return headerResolver.apply(header);
+    }
+
+    private JwsHeader<?> getAllHeadersFromToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getHeader();
+    }
+
     public <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
@@ -124,9 +114,5 @@ public class JWTService {
     private Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
-    }
-
-    public boolean isTokenValid(String token) {
-        return !isTokenExpired(token) && getUsernameFromToken(token) != null;
     }
 }
