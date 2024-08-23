@@ -16,6 +16,7 @@ import com.example.spring_security.request.RegisterRequest;
 import com.example.spring_security.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,6 @@ public class UserService {
     private final EncryptionService encryptionService;
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final TokenService tokenService;
 
 
 
@@ -51,11 +51,20 @@ public class UserService {
         user.setRole(Role.USER);
         user.setIsEmailVerified(false);
 
-        Token token = tokenService.generateAccessToken(user);
+        Token token = createVerificationToken(user);
         user.getVerificationTokens().add(token);
         userRepository.save(user);
         System.out.println(token.getToken());
         return new ApiResponse<>("User registered successfully. Please check your email to confirm your account.");
+    }
+
+    public Token createVerificationToken(User user) {
+        Token token = new Token();
+        String generateAccessToken = jwtService.generateAccessToken(new CustomUserDetails(user));
+        token.setToken(generateAccessToken);
+        token.setCreatedTimestamp(jwtService.getIssuedAtDateFromToken(generateAccessToken));
+        token.setUser(user);
+        return token;
     }
 
 
@@ -83,5 +92,22 @@ public class UserService {
     }
 
 
+    public ApiResponse<String> validateTokenAndEnableUser(String token) {
 
+        if (jwtService.isTokenValid(token)) {
+            String username = jwtService.getUsernameFromToken(token);
+            User user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new UserNotFoundException("User not found with email: " + username));
+
+            if (!user.getIsEmailVerified()) {
+                user.setIsEmailVerified(true);  // Setează utilizatorul ca fiind activat
+                userRepository.save(user);  // Salvează modificările în baza de date
+                return ResponseEntity.ok(new ApiResponse<>("User account has been successfully enabled."));
+            } else {
+                return new ApiResponse<>("User account is already enabled.");
+            }
+        } else {
+            return new ApiResponse<>("Invalid or expired token.");
+        }
+    }
 }

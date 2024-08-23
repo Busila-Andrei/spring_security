@@ -38,21 +38,12 @@ public class UserController {
 
     @GetMapping("/auth/validate-token")
     public ResponseEntity<ApiResponse<String>> validateTokenAndEnableUser(@RequestParam("token") String token) {
-        if (jwtService.isTokenValid(token)) {
-            String username = jwtService.getUsernameFromToken(token);
-            User user = userRepository.findByEmail(username)
-                    .orElseThrow(() -> new UserNotFoundException("User not found with email: " + username));
+        ApiResponse<String> apiResponse = userService.validateTokenAndEnableUser(token;
+        return ResponseEntity.ok(apiResponse);
 
-            if (!user.getIsEmailVerified()) {
-                user.setIsEmailVerified(true);  // Setează utilizatorul ca fiind activat
-                userRepository.save(user);  // Salvează modificările în baza de date
-                return ResponseEntity.ok(new ApiResponse<>("User account has been successfully enabled."));
-            } else {
-                return ResponseEntity.badRequest().body(new ApiResponse<>("User account is already enabled."));
-            }
-        } else {
-            return ResponseEntity.badRequest().body(new ApiResponse<>("Invalid or expired token."));
-        }
+
+
+
     }
 
     @PostMapping("/auth/login")
