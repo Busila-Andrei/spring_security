@@ -49,4 +49,8 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return user.getIsEmailVerified();
     }
+
+    public User getUser() {
+        return user;
+    }
 }

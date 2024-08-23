@@ -5,6 +5,8 @@ import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
+    private static final Logger logger = LoggerFactory.getLogger(JWTService.class);
+
     private SecretKey key;
 
     @Value("${jwt.access-token-expiration}")
@@ -34,65 +38,50 @@ public class JWTService {
     @PostConstruct
     public void init() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        //keyBytes = Base64.getDecoder().decode(keyBytes);
+        //keyBytes = Base64.getDecoder().decode(keyBytes); // activează dacă secretul este în Base64
         this.key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
     }
 
     public String generateAccessToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername(), accessTokenExpirationTime);
+        return createToken(new HashMap<>(), userDetails.getUsername(), accessTokenExpirationTime);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername(), refreshTokenExpirationTime);
+        return createToken(new HashMap<>(), userDetails.getUsername(), refreshTokenExpirationTime);
     }
 
-
     private String createToken(Map<String, Object> claims, String subject, long expirationTime) {
-        Map<String, Object> headers = createHeader();
-        Map<String, Object> payload = createPayload(claims, subject, expirationTime);
-        String token = signToken(headers, payload);
+        String token = Jwts.builder()
+                .setHeader(createHeader())
+                .setClaims(createPayload(claims, subject, expirationTime))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
 
-        System.out.println(getAllHeadersFromToken(token));
-        System.out.println(getAllClaimsFromToken(token));
-        System.out.println(isTokenValid(token));
+        logger.debug("Generated Token Headers: {}", getAllHeadersFromToken(token));
+        logger.debug("Generated Token Claims: {}", getAllClaimsFromToken(token));
+        logger.debug("Is Token Valid: {}", isTokenValid(token));
 
         return token;
     }
 
     private Map<String, Object> createHeader() {
         Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "HS256"); // Algoritmul de semnătură
-        headers.put("typ", "JWT");   // Tipul de token
+        headers.put("alg", "HS256");
+        headers.put("typ", "JWT");
         return headers;
     }
 
     private Map<String, Object> createPayload(Map<String, Object> claims, String subject, long expirationTime) {
-        claims.put("sub", subject); // Setează subiectul tokenului
-        claims.put("iat", new Date(System.currentTimeMillis())); // Data emiterii
-        claims.put("exp", new Date(System.currentTimeMillis() + expirationTime)); // Data expirării
+        claims.put("sub", subject);
+        claims.put("iat", new Date(System.currentTimeMillis()));
+        claims.put("exp", new Date(System.currentTimeMillis() + expirationTime));
         return claims;
-    }
-
-    private String signToken(Map<String, Object> headers, Map<String, Object> payload) {
-        return Jwts.builder()
-                .setHeader(headers)
-                .setClaims(payload)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
-
-    public Boolean isTokenValidForUser(String token, UserDetails userDetails) {
-        final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
-
 
     public <T> T getHeaderFromToken(String token, Function<JwsHeader<?>, T> headerResolver) {
         final JwsHeader<?> header = getAllHeadersFromToken(token);
@@ -110,11 +99,6 @@ public class JWTService {
     public String getTypeFromToken(String token) {
         return getHeaderFromToken(token, header -> (String) header.get("typ"));
     }
-
-
-
-
-
 
     public String getUsernameFromToken(String token) {
         return getClaimsFromToken(token, Claims::getSubject);

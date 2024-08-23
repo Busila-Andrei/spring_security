@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -21,14 +22,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("${api.prefix}/")
 public class UserController {
-
-    private final UserService userService;
-    private final JWTService jwtService;
     private final UserRepository userRepository;
 
 
     //@GetMapping("/{userID}/user")
 
+
+    private final UserService userService;
+    private final JWTService jwtService;
 
     @PostMapping("/auth/register")
     public ResponseEntity<ApiResponse<String>> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
@@ -46,7 +47,12 @@ public class UserController {
     public ResponseEntity<ApiResponse<Map<String, String>>> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
         ApiResponse<Map<String, String>> apiResponse = userService.loginUser(loginRequest);
         return ResponseEntity.ok(apiResponse);
+    }
 
+    @GetMapping("/auth/me")
+    public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userService.findUserByEmail(userDetails.getUsername());
+        return ResponseEntity.ok(user);
     }
 
     //@PostMapping("/auth/refresh-token")

@@ -1,8 +1,6 @@
 package com.example.spring_security.service;
 
-
 import com.example.spring_security.config.UserMapper;
-import com.example.spring_security.exception.UnauthorizedException;
 import com.example.spring_security.exception.UserAlreadyExistsException;
 import com.example.spring_security.exception.UserNotFoundException;
 import com.example.spring_security.model.CustomUserDetails;
@@ -14,8 +12,11 @@ import com.example.spring_security.request.LoginRequest;
 import com.example.spring_security.request.RegisterRequest;
 import com.example.spring_security.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -32,14 +34,11 @@ public class UserService {
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
 
-
-
     public ApiResponse<String> createUser(RegisterRequest registerRequest) {
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new UserAlreadyExistsException("User with email " + registerRequest.getEmail() + " already exists!");
         }
 
-        // Create a new user and set its properties
         User user = new User();
         user.setUsername(registerRequest.getFirstName() + " " + registerRequest.getLastName());
         user.setEmail(registerRequest.getEmail());
@@ -50,36 +49,31 @@ public class UserService {
         Token token = createVerificationToken(user);
         user.getVerificationTokens().add(token);
         userRepository.save(user);
-        System.out.println(token.getToken());
+
+        logger.debug("Generated verification token: {}", token.getToken());
         return new ApiResponse<>("User registered successfully. Please check your email to confirm your account.");
     }
 
     public Token createVerificationToken(User user) {
         Token token = new Token();
-        String generateAccessToken = jwtService.generateAccessToken(new CustomUserDetails(user));
-        token.setToken(generateAccessToken);
-        token.setCreatedTimestamp(jwtService.getIssuedAtDateFromToken(generateAccessToken));
+        String generatedToken = jwtService.generateAccessToken(new CustomUserDetails(user));
+        token.setToken(generatedToken);
+        token.setCreatedTimestamp(jwtService.getIssuedAtDateFromToken(generatedToken));
         token.setUser(user);
         return token;
     }
 
-
     public ApiResponse<Map<String, String>> loginUser(LoginRequest loginRequest) {
-        authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
                         loginRequest.getPassword())
         );
 
-        User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + loginRequest.getEmail()));
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        if (!encryptionService.verifyPassword(loginRequest.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException("Invalid credentials.");
-        }
-
-        String accessToken = jwtService.generateAccessToken(new CustomUserDetails(user));
-        String refreshToken = jwtService.generateRefreshToken(new CustomUserDetails(user));
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         Map<String, String> response = new HashMap<>();
         response.put("accessToken", accessToken);
@@ -87,17 +81,15 @@ public class UserService {
         return new ApiResponse<>("Login successful.", response);
     }
 
-
     public ApiResponse<String> validateTokenAndEnableUser(String token) {
-
         if (jwtService.isTokenValid(token)) {
             String username = jwtService.getUsernameFromToken(token);
             User user = userRepository.findByEmail(username)
                     .orElseThrow(() -> new UserNotFoundException("User not found with email: " + username));
 
             if (!user.getIsEmailVerified()) {
-                user.setIsEmailVerified(true);  // Setează utilizatorul ca fiind activat
-                userRepository.save(user);  // Salvează modificările în baza de date
+                user.setIsEmailVerified(true);
+                userRepository.save(user);
                 return new ApiResponse<>("User account has been successfully enabled.");
             } else {
                 return new ApiResponse<>("User account is already enabled.");
