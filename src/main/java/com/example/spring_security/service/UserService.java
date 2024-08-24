@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +42,14 @@ public class UserService {
         }
 
         User user = new User();
+        int count = userRepository.countAllByEmailContaining(registerRequest.getEmail().split("@")[0]);
+        System.out.println(count);
+
+        // Incrementează numărul și adaugă-l la email pentru a genera un email unic pentru testare.
+        String modifiedEmail = registerRequest.getEmail().replace("@", count+ "@");
+        user.setEmail(modifiedEmail);
+
         user.setUsername(registerRequest.getFirstName() + " " + registerRequest.getLastName());
-        user.setEmail(registerRequest.getEmail());
         user.setPassword(encryptionService.encryptPassword(registerRequest.getPassword()));
         user.setRole(Role.USER);
         user.setIsEmailVerified(false);
@@ -53,8 +60,9 @@ public class UserService {
         System.out.println(token.getToken());
 
         logger.debug("Generated verification token: {}", token.getToken());
-        return new ApiResponse<>("User registered successfully. Please check your email to confirm your account.");
+        return new ApiResponse<>("User registered successfully with email " + modifiedEmail + ". Please check your email to confirm your account.");
     }
+
 
     public Token createVerificationToken(User user) {
         Token token = new Token();
@@ -73,7 +81,6 @@ public class UserService {
         );
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        User user = userDetails.getUser();
 
         String accessToken = jwtService.generateAccessToken(userDetails);
         String refreshToken = jwtService.generateRefreshToken(userDetails);
