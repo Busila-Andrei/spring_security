@@ -54,6 +54,12 @@ public class User implements Serializable {
     private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private  List<Course> courses;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Enrollment> enrollments;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id desc")
     private List<Token> verificationTokens = new ArrayList<>();
 
