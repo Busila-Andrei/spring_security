@@ -46,7 +46,7 @@ public class UserService {
         user.setUsername(registerRequest.getFirstName() + " " + registerRequest.getLastName());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(encryptionService.encryptPassword(registerRequest.getPassword()));
-        user.setRole(Role.USER);
+        user.setRole(Role.STUDENT);
         user.setIsEmailVerified(false);
 
         Token token = createVerificationToken(user);
