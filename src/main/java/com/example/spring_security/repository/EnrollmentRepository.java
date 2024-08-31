@@ -1,8 +1,11 @@
 package com.example.spring_security.repository;
 
 import com.example.spring_security.model.Enrollment;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 
-public interface EnrollmentRepository extends CrudRepository<Enrollment, Long> {
+import java.util.List;
 
+public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
+    List<Enrollment> findByUserId(long userId);
 }

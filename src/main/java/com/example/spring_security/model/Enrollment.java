@@ -7,6 +7,7 @@ import lombok.*;
 @Setter
 @Getter
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "enrollments")

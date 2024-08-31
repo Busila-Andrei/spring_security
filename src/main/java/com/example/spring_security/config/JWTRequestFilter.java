@@ -35,10 +35,13 @@ public class JWTRequestFilter extends OncePerRequestFilter {
             String token = tokenHeader.substring(7);
             String username = jwtService.getUsernameFromToken(token);
 
+            System.out.println("Username extracted from token: " + username);
+
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 CustomUserDetails customUserDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
 
                 if (jwtService.isTokenValidForUser(token, customUserDetails)) {
+                    System.out.println("Token is valid for user: " + username);
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(
                                     customUserDetails,
@@ -49,11 +52,16 @@ public class JWTRequestFilter extends OncePerRequestFilter {
 
                     // Set authentication in the Security Context
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                } else {
+                    System.out.println("Token is NOT valid for user: " + username);
                 }
             }
+        } else {
+            System.out.println("No Bearer token found in request");
         }
 
         filterChain.doFilter(request, response);
     }
+
 
 }
