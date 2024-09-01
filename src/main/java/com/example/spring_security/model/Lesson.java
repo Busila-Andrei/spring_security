@@ -6,26 +6,26 @@ import lombok.*;
 
 import java.util.List;
 
-@Getter
 @Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity(name = "questions")
-public class Question {
+@Entity(name = "lessons")
+public class Lesson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String content;
+    private String title;
 
-    @ElementCollection
-    private List<String> options;
-
-    private String correctAnswer;
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
+
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
+    private List<Exercise> exercises;
 
 }

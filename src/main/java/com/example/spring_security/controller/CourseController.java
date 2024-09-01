@@ -10,17 +10,17 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("${api.prefix}/course")
+@RequestMapping("${api.prefix}/courses/")
 public class CourseController {
 
     private final CourseService courseService;
 
-    @PostMapping
+    @PostMapping("/create-course")
     public ResponseEntity<ApiResponse<?>> createCourse(@RequestBody CreateCourseRequest request) {
         return ResponseEntity.ok(courseService.createCourse(request));
     }
 
-    @GetMapping
+    @GetMapping("/get-courses")
     public ResponseEntity<ApiResponse<?>> getAllCourses() {
         return ResponseEntity.ok(courseService.getAllCourses());
     }

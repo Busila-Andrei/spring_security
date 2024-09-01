@@ -3,7 +3,6 @@ package com.example.spring_security.model;
 import java.io.Serializable;
 
 public enum Role implements Serializable {
-    STUDENT,
-    INSTRUCTOR,
-    ADMIN
+    ROLE_STUDENT,
+    ROLE_ADMIN
 }
