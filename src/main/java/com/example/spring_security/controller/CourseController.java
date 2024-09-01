@@ -4,6 +4,7 @@ package com.example.spring_security.controller;
 import com.example.spring_security.request.CreateCourseRequest;
 import com.example.spring_security.response.ApiResponse;
 import com.example.spring_security.service.CourseService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

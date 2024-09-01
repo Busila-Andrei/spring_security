@@ -1,6 +1,8 @@
 package com.example.spring_security.service;
 
 
+import com.example.spring_security.config.Mapper;
+import com.example.spring_security.dto.LessonDTO;
 import com.example.spring_security.exception.UserAlreadyExistsException;
 import com.example.spring_security.model.Course;
 import com.example.spring_security.model.Lesson;
@@ -19,8 +21,9 @@ public class LessonService {
 
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
+    private final Mapper mapper;
 
-    public ApiResponse<Lesson> createLesson(CreateLessonRequest request) {
+    public ApiResponse<LessonDTO> createLesson(CreateLessonRequest request) {
         Course course = courseRepository.findById(request.getCourseId()).orElseThrow(
                 () -> new RuntimeException("Course not found")
         );
@@ -35,7 +38,7 @@ public class LessonService {
                 .description(request.getDescription())
                 .course(course).build();
     lessonRepository.save(lesson);
-    return new ApiResponse<>("Lesson created successfully", lesson);
+    return new ApiResponse<>("Lesson created successfully", mapper.toDto(lesson));
     }
 
     public ApiResponse<List<Lesson>> getLessonsByCourse(Long courseId) {

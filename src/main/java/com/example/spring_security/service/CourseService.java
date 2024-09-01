@@ -1,6 +1,9 @@
 package com.example.spring_security.service;
 
 
+import com.example.spring_security.config.Mapper;
+import com.example.spring_security.dto.CourseDTO;
+import com.example.spring_security.exception.UserAlreadyExistsException;
 import com.example.spring_security.model.Course;
 import com.example.spring_security.model.Enrollment;
 import com.example.spring_security.model.User;
@@ -22,16 +25,22 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final Mapper mapper;
 
-    public ApiResponse<Course> createCourse(CreateCourseRequest request) {
+    public ApiResponse<CourseDTO> createCourse(CreateCourseRequest request) {
+
+        if (courseRepository.existsByCode(request.getCode())) {
+            throw new UserAlreadyExistsException("Course with code " + request.getCode() + " already exists!");
+        }
         Course course = Course.builder()
+                .code(request.getCode())
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .language(request.getLanguage())
                 .build();
 
         courseRepository.save(course);
-        return new ApiResponse<>("Course created successfully.", course);
+        return new ApiResponse<>("Course created successfully.", mapper.toDto(course));
     }
 
     public ApiResponse<List<Course>> getAllCourses() {

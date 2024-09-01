@@ -1,7 +1,5 @@
 package com.example.spring_security.service;
 
-import com.example.spring_security.config.UserMapper;
-import com.example.spring_security.exception.UnauthorizedException;
 import com.example.spring_security.exception.UserAlreadyExistsException;
 import com.example.spring_security.exception.UserNotFoundException;
 import com.example.spring_security.model.CustomUserDetails;
@@ -22,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +28,7 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
+
     private final EncryptionService encryptionService;
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
