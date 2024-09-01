@@ -1,6 +1,7 @@
 package com.example.spring_security.service;
 
 
+import com.example.spring_security.exception.UserAlreadyExistsException;
 import com.example.spring_security.model.Course;
 import com.example.spring_security.model.Lesson;
 import com.example.spring_security.repository.CourseRepository;
@@ -24,7 +25,12 @@ public class LessonService {
                 () -> new RuntimeException("Course not found")
         );
 
+        if (lessonRepository.existsByCode(request.getCode())) {
+            throw new UserAlreadyExistsException("Lesson with code " + request.getCode() + " already exists!");
+        }
+
         Lesson lesson = Lesson.builder()
+                .code(request.getCode())
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .course(course).build();
