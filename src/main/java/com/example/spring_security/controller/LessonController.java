@@ -14,7 +14,7 @@ public class LessonController {
 
     private final LessonService lessonService;
 
-    @PostMapping
+    @PostMapping("/create-lessons")
     public ResponseEntity<ApiResponse<?>> createLesson(@RequestBody CreateLessonRequest request) {
         return ResponseEntity.ok(lessonService.createLesson(request));
     }

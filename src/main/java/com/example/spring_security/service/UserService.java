@@ -55,7 +55,7 @@ public class UserService {
         System.out.println(token.getToken());
 
         logger.debug("Generated verification token: {}", token.getToken());
-        return new ApiResponse<>("User registered successfully with email " + registerRequest.getEmail() + ". Please check your email to confirm your account.");
+        return new ApiResponse<>("User registered successfully with email " + registerRequest.getEmail() + ". Please check your email to confirm your account.", token.getToken());
     }
 
 
