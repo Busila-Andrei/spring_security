@@ -2,9 +2,13 @@ package com.example.spring_security.request;
 
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class RegisterRequest {
 
     @NotNull(message = "First name cannot be null")
@@ -31,4 +35,6 @@ public class RegisterRequest {
     @Pattern(regexp = ".*\\d.*", message = "Password must contain at least one digit")
     @Pattern(regexp = ".*[@#$%^&+=!].*", message = "Password must contain at least one special character (@#$%^&+=!)")
     private String password;
+
+
 }
