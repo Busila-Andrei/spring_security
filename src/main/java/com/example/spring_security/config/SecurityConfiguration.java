@@ -77,7 +77,4 @@ public class SecurityConfiguration {
         return authenticationConfiguration.getAuthenticationManager();
 
     }
-
-
-
 }

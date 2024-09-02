@@ -23,8 +23,6 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-    private static final Logger logger = LoggerFactory.getLogger(JWTService.class);
-
     private SecretKey key;
 
     @Value("${jwt.access-token-expiration}")

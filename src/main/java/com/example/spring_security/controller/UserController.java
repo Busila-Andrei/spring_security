@@ -55,6 +55,8 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+
+    //TODO LIST
     //@PostMapping("/auth/refresh-token")
     //@PostMapping("/auth/forgot-password")
     //@PostMapping("/auth/reset-password")
@@ -63,7 +65,6 @@ public class UserController {
     //public ResponseEntity<ApiResponse> getUserByEmail(@PathVariable String userEmail) {}
     //@PutMapping("/user/me")
     //@PostMapping("/auth/logout")
-
     //@PostMapping("/auth/resend-confirmation")
 
 

@@ -1,18 +1,24 @@
 package com.example.spring_security;
 
 import com.example.spring_security.controller.UserController;
+import com.example.spring_security.model.User;
+import com.example.spring_security.repository.UserRepository;
 import com.example.spring_security.request.LoginRequest;
 import com.example.spring_security.request.RegisterRequest;
 import com.example.spring_security.response.ApiResponse;
+import com.example.spring_security.service.JWTService;
 import com.example.spring_security.service.UserService;
-import com.example.spring_security.model.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +26,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +38,22 @@ public class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private JWTService jwtService;
+
+    @MockBean
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserController userController;
+
+    @BeforeEach
+    public void setup() {
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(userController)
+                .build();
+    }
 
     @Test
     public void testRegisterUser() throws Exception {
@@ -45,7 +68,8 @@ public class UserControllerTest {
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\":\"John\",\"lastName\":\"Doe\",\"email\":\"john.doe@example.com\",\"password\":\"Password123!\"}"))
+                        .content("{\"firstName\":\"John\",\"lastName\":\"Doe\",\"email\":\"john.doe@example.com\",\"password\":\"Password123!\"}")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("User registered successfully."));
     }
@@ -65,7 +89,8 @@ public class UserControllerTest {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"john.doe@example.com\",\"password\":\"Password123!\"}"))
+                        .content("{\"email\":\"john.doe@example.com\",\"password\":\"Password123!\"}")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Login successful."))
                 .andExpect(jsonPath("$.data.accessToken").value("access-token"))
@@ -81,7 +106,8 @@ public class UserControllerTest {
         when(userService.findUserByEmail(anyString())).thenReturn(user);
 
         mockMvc.perform(get("/api/auth/me")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"));
     }
@@ -93,9 +119,9 @@ public class UserControllerTest {
 
         mockMvc.perform(get("/api/auth/validate-token")
                         .param("token", "valid-token")
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("User account has been successfully enabled."));
     }
 }
-
