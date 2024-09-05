@@ -72,6 +72,7 @@ public class UserService {
                         loginRequest.getPassword())
         );
 
+
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         String accessToken = jwtService.generateAccessToken(userDetails);

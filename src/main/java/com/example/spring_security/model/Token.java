@@ -33,5 +33,4 @@ public class Token implements Serializable {
     @ManyToOne(optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
 }

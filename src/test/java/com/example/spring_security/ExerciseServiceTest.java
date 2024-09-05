@@ -41,7 +41,7 @@ public class ExerciseServiceTest {
         Lesson lesson = new Lesson();
         when(lessonRepository.findById(anyLong())).thenReturn(Optional.of(lesson));
 
-        ApiResponse<Exercise> response = exerciseService.createExercise(request);
+        ApiResponse<Exercise> response = exerciseService.createexercise(request);
 
         assertEquals("Exercise created successfully", response.getMessage());
         verify(exerciseRepository, times(1)).save(any(Exercise.class));
@@ -55,7 +55,7 @@ public class ExerciseServiceTest {
         when(lessonRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                exerciseService.createExercise(request));
+                exerciseService.createexercise(request));
 
         assertEquals("Lesson not found", exception.getMessage());
     }

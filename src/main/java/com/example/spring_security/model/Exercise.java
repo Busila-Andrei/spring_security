@@ -22,6 +22,4 @@ public class Exercise {
     @ManyToOne
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
-
-
 }

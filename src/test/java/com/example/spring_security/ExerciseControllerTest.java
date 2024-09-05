@@ -5,8 +5,6 @@ import com.example.spring_security.request.CreateExerciseRequest;
 import com.example.spring_security.response.ApiResponse;
 import com.example.spring_security.service.ExerciseService;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,7 +35,7 @@ public class ExerciseControllerTest {
         request.setAnswer("Paris");
         request.setLessonId(1L);
 
-        when(exerciseService.createExercise(any(CreateExerciseRequest.class)))
+        when(exerciseService.createexercise(any(CreateExerciseRequest.class)))
                 .thenReturn(new ApiResponse<>("Exercise created successfully", null));
 
         mockMvc.perform(post("/api/exercises/create-exercises")

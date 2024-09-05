@@ -66,7 +66,4 @@ public class UserController {
     //@PutMapping("/user/me")
     //@PostMapping("/auth/logout")
     //@PostMapping("/auth/resend-confirmation")
-
-
-
 }

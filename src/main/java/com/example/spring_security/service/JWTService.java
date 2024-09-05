@@ -1,18 +1,15 @@
 package com.example.spring_security.service;
 
-import com.example.spring_security.model.CustomUserDetails;
+import com.example.spring_security.config.JwtConfig;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -23,36 +20,31 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-    private SecretKey key;
+    private final JwtConfig jwtConfig;
 
-    @Value("${jwt.access-token-expiration}")
-    private long accessTokenExpirationTime;
-
-    @Value("${jwt.refresh-token-expiration}")
-    private long refreshTokenExpirationTime;
-
-    @Value("${jwt.secret}")
-    private String secret;
+    public JWTService(JwtConfig jwtConfig) {
+        this.jwtConfig = jwtConfig;
+    }
 
     @PostConstruct
     public void init() {
-        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-        this.key = new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
+        byte[] keyBytes = jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8);
+        jwtConfig.setKey(new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName()));
     }
 
     public String generateAccessToken(UserDetails userDetails) {
-        return createToken(new HashMap<>(), userDetails.getUsername(), accessTokenExpirationTime);
+        return createToken(new HashMap<>(), userDetails.getUsername(), jwtConfig.getAccessTokenExpirationTime());
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
-        return createToken(new HashMap<>(), userDetails.getUsername(), refreshTokenExpirationTime);
+        return createToken(new HashMap<>(), userDetails.getUsername(), jwtConfig.getRefreshTokenExpirationTime());
     }
 
     private String createToken(Map<String, Object> claims, String subject, long expirationTime) {
         return Jwts.builder()
                 .setHeader(createHeader())
                 .setClaims(createPayload(claims, subject, expirationTime))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(jwtConfig.getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -97,7 +89,7 @@ public class JWTService {
     }
 
     private JwsHeader<?> getAllHeadersFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getHeader();
+        return Jwts.parserBuilder().setSigningKey(jwtConfig.getKey()).build().parseClaimsJws(token).getHeader();
     }
 
     public <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
@@ -106,11 +98,10 @@ public class JWTService {
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder().setSigningKey(jwtConfig.getKey()).build().parseClaimsJws(token).getBody();
     }
 
     private Boolean isTokenExpired(String token) {
-        final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
+        return getExpirationDateFromToken(token).before(new Date());
     }
 }

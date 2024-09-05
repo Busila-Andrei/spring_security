@@ -18,7 +18,7 @@ public class ExerciseService {
     private final ExerciseRepository exerciseRepository;
     private final LessonRepository lessonRepository;
 
-    public ApiResponse<Exercise> createExercise(CreateExerciseRequest request) {
+    public ApiResponse<Exercise> createexercise(CreateExerciseRequest request) {
         Lesson lesson = lessonRepository.findById(request.getLessonId()).orElseThrow(
                 () -> new RuntimeException("Lesson not found")
         );
@@ -41,3 +41,5 @@ public class ExerciseService {
         return new ApiResponse<>("Exercises retrieved successfully", lesson.getExercises());
     }
 }
+
+

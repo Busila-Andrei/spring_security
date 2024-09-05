@@ -16,7 +16,7 @@ public class ExerciseController {
 
     @PostMapping("/create-exercises")
     public ResponseEntity<ApiResponse<?>> createExercise(@RequestBody CreateExerciseRequest request) {
-        return ResponseEntity.ok(exerciseService.createExercise(request));
+        return ResponseEntity.ok(exerciseService.createexercise(request));
     }
 
     @GetMapping("/lesson/{lessonId}")

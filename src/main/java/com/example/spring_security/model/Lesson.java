@@ -29,5 +29,4 @@ public class Lesson {
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL)
     private List<Exercise> exercises;
-
 }

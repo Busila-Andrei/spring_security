@@ -14,7 +14,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public JWTService jwtService() {
-        return new JWTService();
+    public JWTService jwtService(JwtConfig jwtConfig) {
+        return new JWTService(jwtConfig);
     }
 }
