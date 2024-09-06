@@ -2,21 +2,15 @@ package com.example.spring_security.model;
 
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
 
-@Getter
-public class CustomUserDetails implements UserDetails {
 
-    private final User user;
+public record CustomUserDetails(User user) implements UserDetails {
 
-    public CustomUserDetails(User user) {
-        this.user = user;
-    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));

@@ -27,39 +27,6 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-
-//    @Override
-//    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-//            throws ServletException, IOException {
-//        final String tokenHeader = request.getHeader("Authorization");
-//
-//        if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
-//            String token = tokenHeader.substring(7);
-//            String username = jwtService.getUsernameFromToken(token);
-//
-//            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-//                CustomUserDetails customUserDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
-//
-//                if (jwtService.isTokenValidForUser(token, customUserDetails)) {
-//                    UsernamePasswordAuthenticationToken authenticationToken =
-//                            new UsernamePasswordAuthenticationToken(
-//                                    customUserDetails,
-//                                    null,
-//                                    customUserDetails.getAuthorities()
-//                            );
-//                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//
-//                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-//                }
-//            }
-//        }
-//
-//        filterChain.doFilter(request, response);
-//    }
-
-
-
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -70,7 +37,11 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
             if (isValidUser(username)) {
                 authenticateUser(username, token, request);
+            } else {
+                logger.warn("User is not valid or already authenticated for token: {}");
             }
+        } else {
+            logger.warn("JWT Token is missing in the Authorization header");
         }
         filterChain.doFilter(request, response);
     }
@@ -93,11 +64,11 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(
                             customUserDetails,
-                            null,
+                            null, // fără parolă pentru că utilizatorul e deja autentificat
                             customUserDetails.getAuthorities()
                     );
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken); // Setează autentificarea în contextul securității
         }
     }
 }
