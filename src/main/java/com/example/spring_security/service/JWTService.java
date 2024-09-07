@@ -42,7 +42,7 @@ public class JWTService {
 
     private String createToken(Map<String, Object> claims, String subject, long expirationTime) {
         return Jwts.builder()
-                .setHeader(createHeader())
+                //.setHeader(createHeader())
                 .setClaims(createPayload(claims, subject, expirationTime))
                 .signWith(jwtConfig.getKey(), SignatureAlgorithm.HS256)
                 .compact();
