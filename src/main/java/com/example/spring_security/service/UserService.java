@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,9 +31,10 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    private final EncryptionService encryptionService;
+    //private final EncryptionService encryptionService;
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     public ApiResponse<String> createUser(RegisterRequest registerRequest) {
         // Logare început de operație
@@ -78,7 +80,8 @@ public class UserService {
         return User.builder()
                 .username(registerRequest.getFirstName() + " " + registerRequest.getLastName())
                 .email(registerRequest.getEmail())
-                .password(encryptionService.encryptPassword(registerRequest.getPassword()))
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                //.password(encryptionService.encryptPassword())
                 .role(Role.ROLE_ADMIN)
                 .isEmailVerified(false)
                 .verificationTokens(new ArrayList<>())
