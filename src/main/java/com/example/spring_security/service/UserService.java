@@ -31,36 +31,29 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    //private final EncryptionService encryptionService;
     private final JWTService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
     public ApiResponse<String> createUser(RegisterRequest registerRequest) {
         // Logare început de operație
-        logger.info("Starting registration for email: {}", registerRequest.getEmail());
 
         // Verificăm dacă utilizatorul există deja
         validateUserDoesNotExist(registerRequest.getEmail());
 
         // Logare: utilizator inexistent
-        logger.debug("User with email {} does not exist, proceeding with creation", registerRequest.getEmail());
 
         // Creăm utilizatorul
         User user = buildUserFromRequest(registerRequest);
 
-        logger.info("Created user object for email: {}", registerRequest.getEmail());
 
         // Creăm și asociem un token de verificare
         Token token = createAndAssignVerificationToken(user);
-        logger.debug("Generated verification token: {}", token.getToken());
 
         // Salvăm utilizatorul și token-ul în baza de date
         userRepository.save(user);
-        logger.info("User saved in the database with email: {}", user.getEmail());
 
         // Returnăm răspunsul API
-        logger.info("User registered successfully with email: {}. Token: {}", registerRequest.getEmail(), token.getToken());
         return new ApiResponse<>(
                 "User registered successfully with email " + registerRequest.getEmail() +
                         ". Please check your email to confirm your account.",
@@ -70,13 +63,11 @@ public class UserService {
 
     private void validateUserDoesNotExist(String email) {
         if (userRepository.existsByEmail(email)) {
-            logger.error("User with email {} already exists!", email);
             throw new UserAlreadyExistsException("User with email " + email + " already exists!");
         }
     }
 
     private User buildUserFromRequest(RegisterRequest registerRequest) {
-        logger.debug("Building user object from request for email: {}", registerRequest.getEmail());
         return User.builder()
                 .username(registerRequest.getFirstName() + " " + registerRequest.getLastName())
                 .email(registerRequest.getEmail())
@@ -89,12 +80,10 @@ public class UserService {
     }
 
     private Token createAndAssignVerificationToken(User user) {
-        logger.debug("Creating verification token for user with email: {}", user.getEmail());
         System.out.println(user.getUsername());
         Token token = createVerificationToken(user);
         System.out.println(token.getToken());
         user.getVerificationTokens().add(token);
-        logger.debug("Token added to user with email: {}", user.getEmail());
         return token;
     }
 
